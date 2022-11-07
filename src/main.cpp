@@ -19,13 +19,34 @@ void syntax_error(const char *err, ...) {
 	exit(0);
 }
 
-char *range_to_str(const char *start, const char *end) {
-	size_t size = end - start;
-	char *str = (char *)calloc(size+1, sizeof(char));
-	for (size_t i = 0; i < size; i++) {
+struct InternStr {
+	size_t length;
+	char *string;
+};
+
+std::vector<InternStr> interns;
+
+char *intern_str_range(const char *start, const char *end) {
+	size_t length = end - start;
+	char *str = (char *)calloc(length+1, sizeof(char));
+	for (size_t i = 0; i < length; i++) {
 		str[i] = *start++;
 	}
-	return str;
+	str[length] = 0;
+	
+	
+	for (auto it = interns.begin(); it != interns.end(); it++) {
+		size_t cmp_len = (length > it->length) ? length : it->length;
+		if (strncmp(str, it->string, cmp_len) == 0) {
+			return it->string;
+		}
+	}
+	
+	InternStr intern;
+	intern.string = str;
+	intern.length = length;
+	interns.push_back(intern);
+	return intern.string;
 }
 
 enum Token_Type {
@@ -133,7 +154,7 @@ void next_token() {
 				stream++;
 			}
 			token.type = TOKEN_IDENT;
-			token.ident = range_to_str(start, stream);
+			token.ident = intern_str_range(start, stream);
 		}break;
 		
 		case '\'': {
@@ -213,7 +234,7 @@ void init_lexer() {
 	escapes['\"'] = '\"';
 }
 
-void lexer_test() {
+void lexer_tests() {
 	stream = "10 + 10";
 	next_token();
 	assert(token.type == TOKEN_INTLIT && token.intlit == 10);
@@ -279,7 +300,7 @@ void lexer_test() {
 
 int main(int argc, char **argv) {
 	init_lexer();
-	lexer_test();
+	lexer_tests();
 	
 	return 0;
 }
