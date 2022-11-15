@@ -1,4 +1,3 @@
-
 IDENT    = [a-zA-Z][_0-9a-zA-Z]*
 CHARLIT  = \' ([^\n\t\\\'] | \\' | \\\\ | \\n | \\t) \'
 STRLIT   = \" ([^\n\t\\\"] | \\" | \\\\ | \\n | \\t)* \"
@@ -14,3 +13,101 @@ INTLIT   = 0 | [1-9][0-9]*    DECIMAL
 
 COMMENTS = // * (\r\n|\r|\n|)
          | /\* ([^\*]|(\*+[^/])*? \*/
+
+
+   UNARY OPERATORS:
+INC = ++
+DEC = --
+
+BINARY OPERATORS:
+ LSHIFT  <<
+ RSHIFT  >>
+ OR   ||
+ AND  &&
+ LTEQ <=
+ GTEQ >=
+ EQ   ==
+ NEQ  !=
+
+ ADD_ASSIGN    +=
+ SUB_ASSIGN    -=
+ MUL_ASSIGN    *=
+ DIV_ASSIGN    /=
+ MOD_ASSIGN    %=
+ COLON_ASSIGN  :=
+ LSHIFT_ASSIGN <<=
+ RSHIFT_ASSIGN >>=
+ OR_ASSIGN     |=
+ XOR_ASSIGN    ^=
+ AND_ASSIGN    &=
+ NOT_ASSIGN    ~=
+
+OPERATOR PRECEDENCE:
+ () [] .
+ INC DEC UPLUS UMINUS ! ~
+ LSHIFT RSHIFT
+ &
+ ^
+ |
+ * / %
+ + -
+ LT LTEQ GT GTEQ
+ EQ NEQ
+ AND
+ OR
+ TERNARY
+ =
+ *_ASSIGN
+
+GRAMMAR:
+
+base_type = int
+          | float
+          | double
+          | char
+type = IDENT ('[]' | '*')*
+     | base_type ('[]' | '*')*
+
+exprlist = (expr (',' exprlist)*)?
+expr = expr '+' expr
+     | expr '-' expr
+     | expr '*' expr
+     | expr '/' expr
+     | expr '%' expr
+     | expr EQ expr
+     | expr NEQ expr
+     | expr 
+     | '(' expr ')'
+     | '-' expr
+     | '+' expr
+     | IDENT '(' exprlist ')'
+     | IDENT
+     | INTLIT
+     | FLOATLIT
+     | CHARLIT
+
+typelist = (type (',' typelist)*)?
+paramlist = (IDENT ':' type (',' paramlist)*)?
+fieldlist = IDENT ('=' expr)? (',' fieldlist)*
+
+func_decl = IDENT '::' '(' paramlist  ')' ':' typelist stmtblock
+enum_decl = IDENT '::' 'enum' '{' fieldlist '}'
+struct_decl = IDENT '::' 'struct' '{' var_decl* '}'
+union_decl = IDENT '::' 'union' '{' (IDENT ':' type ';')* '}'
+var_decl = IDENT ':' type ('=' expr)? ';'
+         | IDENT ':=' expr ';'
+
+decl = func_decl
+     | enum_decl
+     | struct_decl
+     | union_decl
+     | var_decl
+
+stmtblock = '{' statement* '}'
+statement = 'if' expr stmtblock
+          | 'while' expr stmtblock
+          | 'for' expr stmtblock
+          | var_decl
+          | IDENT '=' expr ';'
+          | IDENT '(' exprlist  ')' ';'
+          | stmtblock
