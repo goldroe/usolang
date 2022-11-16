@@ -21,22 +21,37 @@ struct FuncParam {
     Typespec type;
 };
 
+struct Aggregate_Field {
+    char *identifier;
+    Typespec type;
+    Expr expr;
+};
+
 struct Func_Decl {
     FuncParam *params;
 };
 
-struct Enum_Decl {
+struct Enum_Field {
+    char *identifier;
+    Expr expr;
+};
 
+struct Enum_Decl {
+    Enum_Field *fields;
 };
 
 struct Struct_Decl {
-
+    Aggregate_Field *fields;
 };
+
 struct Union_Decl {
-
+    Aggregate_Field *fields;
 };
+
 struct Var_Decl {
-    
+    char *identifier;
+    Typespec type;
+    Expr expr;
 };
 
 struct Decl {
