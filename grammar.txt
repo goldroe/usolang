@@ -86,28 +86,30 @@ expr = expr '+' expr
      | FLOATLIT
      | CHARLIT
 
+aggregatefield = IDENT ':' type ('=' expr)? ';'
+
 typelist = (type (',' typelist)*)?
 paramlist = (IDENT ':' type (',' paramlist)*)?
-fieldlist = IDENT ('=' expr)? (',' fieldlist)*
+enumfieldlist = (IDENT ('=' expr)? (',' fieldlist)*)?
 
-func_decl = IDENT '::' '(' paramlist  ')' ':' typelist stmtblock
-enum_decl = IDENT '::' 'enum' '{' fieldlist '}'
-struct_decl = IDENT '::' 'struct' '{' var_decl* '}'
-union_decl = IDENT '::' 'union' '{' (IDENT ':' type ';')* '}'
-var_decl = IDENT ':' type ('=' expr)? ';'
-         | IDENT ':=' expr ';'
+funcdecl   = IDENT '::' '(' paramlist  ')' ':' typelist stmtblock
+enumdecl   = IDENT '::' 'enum' '{' enumfieldlist '}'
+structdecl = IDENT '::' 'struct' '{' aggregatefield* '}'
+uniondecl  = IDENT '::' 'union' '{' aggregatefield* '}'
+vardecl    = IDENT ':' type ('=' expr)? ';'
+           | IDENT ':=' expr ';'
 
-decl = func_decl
-     | enum_decl
-     | struct_decl
-     | union_decl
-     | var_decl
+decl = funcdecl
+     | enumdecl
+     | structdecl
+     | uniondecl
+     | vardecl
 
 stmtblock = '{' statement* '}'
 statement = 'if' expr stmtblock
           | 'while' expr stmtblock
           | 'for' expr stmtblock
-          | var_decl
+          | vardecl
           | IDENT '=' expr ';'
           | IDENT '(' exprlist  ')' ';'
           | stmtblock
