@@ -34,7 +34,7 @@ BINARY OPERATORS:
  MUL_ASSIGN    *=
  DIV_ASSIGN    /=
  MOD_ASSIGN    %=
- COLON_ASSIGN  :=
+ AUTO_ASSIGN   :=
  LSHIFT_ASSIGN <<=
  RSHIFT_ASSIGN >>=
  OR_ASSIGN     |=
@@ -59,6 +59,31 @@ OPERATOR PRECEDENCE:
  =
  *_ASSIGN
 
+
+SAMPLE:
+
+String :: struct {
+  length: int;
+  data: *char;
+}
+
+Vector2 :: struct {
+  x: int;
+  y: int;
+}
+
+make_vector :: (x: int, y: int) : Vector2 {
+  result: Vector2;
+  result.x = x;
+  result.y = y;
+  return result;
+}
+
+make_vector :: (x: int, y: int) : Vector2 {
+  result := {x, y};
+  return (:Vector2){x, y};
+}
+
 GRAMMAR:
 
 base_type = int
@@ -69,35 +94,18 @@ type = IDENT ('[]' | '*')*
      | base_type ('[]' | '*')*
 
 exprlist = (expr (',' exprlist)*)?
-expr = expr '+' expr
-     | expr '-' expr
-     | expr '*' expr
-     | expr '/' expr
-     | expr '%' expr
-     | expr EQ expr
-     | expr NEQ expr
-     | expr 
-     | '(' expr ')'
-     | '-' expr
-     | '+' expr
-     | IDENT '(' exprlist ')'
-     | IDENT
-     | INTLIT
-     | FLOATLIT
-     | CHARLIT
-
-aggregatefield = IDENT ':' type ('=' expr)? ';'
-
 typelist = (type (',' typelist)*)?
 paramlist = (IDENT ':' type (',' paramlist)*)?
-enumfieldlist = (IDENT ('=' expr)? (',' fieldlist)*)?
+enumfieldlist = (IDENT ('=' expr)? (',' enumfieldlist)*)?
+
+aggregatefield = IDENT ':' type ('=' expr)? ';'
 
 funcdecl   = IDENT '::' '(' paramlist  ')' ':' typelist stmtblock
 enumdecl   = IDENT '::' 'enum' '{' enumfieldlist '}'
 structdecl = IDENT '::' 'struct' '{' aggregatefield* '}'
 uniondecl  = IDENT '::' 'union' '{' aggregatefield* '}'
 vardecl    = IDENT ':' type ('=' expr)? ';'
-           | IDENT ':=' expr ';'
+           | IDENT AUTO_ASSIGN expr
 
 decl = funcdecl
      | enumdecl
@@ -105,11 +113,46 @@ decl = funcdecl
      | uniondecl
      | vardecl
 
+Statements:
+
+assign_op = '=' | AUTO_ASSIGN | ADD_ASSIGN | ...
+caseblock = 'case' expr ':' statement*
+          | 'default' ':' statement*
+switchblock = '{' caseblock* '}'
 stmtblock = '{' statement* '}'
+
 statement = 'if' expr stmtblock
+          | 'do' stmtblock 'while' expr ';'
           | 'while' expr stmtblock
           | 'for' expr stmtblock
-          | vardecl
-          | IDENT '=' expr ';'
-          | IDENT '(' exprlist  ')' ';'
+          | 'switch' expr switchblock
+          | 'return' expr? ';'
+          | 'break' ';'
+          | 'continue' ';'
+          | expr (INC | DEC | assign_op expr)?
           | stmtblock
+
+Expressions:
+
+cmp_op = EQ | NEQ | '<' | '>' | LTEQ | GTEQ
+add_op = '+' | '-' | '^' | '|'
+mul_op = '*' | '/' | '%' | '&' | LSHIFT | RSHIFT
+
+typespec = IDENT | '(' ':' type ')'
+operand_expr = INT
+             | FLOAT
+             | STR
+             | IDENT
+             | typespec? '{' exprlist '}'
+             | CAST '(' type ')' expr
+             | '(' epxr ')'
+base_expr = operand_expr ('(' exprlist ')' | '[' expr ']' | '.' IDENT)*
+unary_expr = [+-&*] unary_expr
+           | base_expre_expr
+mul_expr = unary_expr (mul_op unary_expr)*
+add_expr = mul_expr (add_op mul_expr)*
+cmp_expr = add_expr (cmp_op add_expr)*
+and_epxr = cmp_expr (AND cmp_expr)*
+or_expr = and_expr (OR and_expr)*
+ternary_expr = or_expr ('?' ternary_expr ':' ternary_expr)?
+expr = ternary_expr
