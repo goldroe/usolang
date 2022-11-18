@@ -1,146 +1,95 @@
 #ifndef AST_H
 #define AST_H
 
-#include "stb_ds.h"
+#include <stdint.h>
 
-enum Decl_Type {
-    DECL_NONE,
-    DECL_FUNCTION,
-    DECL_ENUM,
-    DECL_STRUCT,
-    DECL_UNION,
-    DECL_VARIABLE,
+enum Typespec_Kind {
+    TYPESPEC_NONE,
+    TYPESPEC_IDENT,
+    TYPESPEC_ARRAY,
+    TYPESPEC_POINTER,
+    TYPESPEC_FUNCTION,
 };
 
 struct Typespec {
-    
-};
+    Typespec_Kind kind;
 
-
-struct FuncParam {
-    char *identifier;
-    Typespec *type;
-};
-
-struct Aggregate_Field {
-    char *identifier;
-    Typespec *type;
-    Expr *expr;
-};
-
-struct Func_Decl {
-    FuncParam *params;
-};
-
-struct Enum_Field {
-    char *identifier;
-    Expr *expr;
-};
-
-struct Enum_Decl {
-    Enum_Field *fields;
-};
-
-struct Struct_Decl {
-    Aggregate_Field *fields;
-};
-
-struct Union_Decl {
-    Aggregate_Field *fields;
-};
-
-struct Var_Decl {
-    char *identifier;
-    Typespec *type;
-    Expr *expr;
-};
-
-struct Decl {
-    Decl_Type type;
-    char *identifier;
     union {
-        Func_Decl funcdecl;
-        Enum_Decl *enumdecl;
-        Struct_Decl *structdecl;
-        Union_Decl *uniondecl;
-        Var_Decl *vardecl;
-    };
-};
-
-enum Stmt_Type {
-    STMT_NONE,
-    STMT_IF,
-    STMT_DO,
-    STMT_WHILE,
-    STMT_FOR,
-    STMT_SWITCH,
-    STMT_RETURN,
-    STMT_BREAK,
-    STMT_CONTINUE,
-    STMT_ASSIGN,
-    STMT_AUTO_ASSIGN,
-    STMT_EXPR,
-    STMT_BLOCK,
-};
-
-struct Stmt {
-    Stmt_Type type;
-    Expr *expr;
-    union {
-        Stmt *statements;
-        Expr *rhs;
+        const char *identifier;
     };
 };
 
 enum Expr_Type {
     EXPR_NONE,
+    EXPR_UNARY,
+    EXPR_BINARY,
+    EXPR_TERNARY,
+    EXPR_CALL,
+    EXPR_INDEX,
+    EXPR_FIELD,
     EXPR_INT,
     EXPR_FLOAT,
     EXPR_STR,
     EXPR_IDENT,
-    EXPR_CAST,
-    EXPR_CALL,
-    EXPR_INDEX,
-    EXPR_FIELD,
     EXPR_COMPOUND,
-    EXPR_UNARY,
-    EXPR_BINARY,
-    EXPR_TERNARY,
+    EXPR_CAST,
+};
+
+struct Compound_Expr {
+    Typespec *type;
+    Expr **args;
+    size_t num_args;
+};
+struct Field_Expr {
+    const char *identifier;
+    const char *field;
+};
+struct Index_Expr {
+    const char *identifier;
+    Expr *expr;
+};
+struct Call_Expr {
+    const char *identifier;
+    Typespec *return_type;
+    Expr **args;
+    size_t num_args;
+};
+struct Cast_Expr {
+    Typespec *type;
+    Expr *expr;
+};
+struct Unary_Expr {
+    Token_Type *op;
+    Expr *expr;
+};
+struct Binary_Expr {
+    Expr *left;
+    Expr *right;
+};
+struct Ternary_Expr {
+    Expr *cond;
+    Expr *then_expr;
+    Expr *else_expr;
 };
 
 struct Expr {
     Expr_Type type;
-    
+
     union {
         uint64_t int_val;
         double float_val;
-        char *str_val;
-        char *identifier;
-        
-        struct {
-            Typespec *compund_type;
-            Expr **compound_list;
-        };
-        // unary
-        struct {
-            Expr *operand;
-            union {
-                Expr **args;
-                Expr *index;
-                const char *field;
-            };
-        };
-        // binary
-        struct {
-            Expr *left;
-            Expr *right;
-        };
-        // ternary
-        struct {
-            Expr *cond;
-            Expr *then_expr;
-            Expr *else_expr;
-        };
+        const char *str_val;
+        const char *identifier;
+
+        Compound_Expr compound;
+        Field_Expr field;
+        Index_Expr index;
+        Call_Expr call;
+        Cast_Expr cast;
+        Unary_Expr unary;
+        Binary_Expr binary;
+        Ternary_Expr ternary;
     };
 };
+
 #endif
