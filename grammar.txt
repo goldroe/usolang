@@ -121,7 +121,7 @@ caseblock = 'case' expr ':' statement*
 switchblock = '{' caseblock* '}'
 stmtblock = '{' statement* '}'
 
-statement = 'if' expr stmtblock
+statement = 'if' expr stmtblock ('else if' stmtblock)* 'else' stmtblock
           | 'do' stmtblock 'while' expr ';'
           | 'while' expr stmtblock
           | 'for' expr stmtblock
@@ -148,7 +148,7 @@ operand_expr = INT
              | '(' epxr ')'
 base_expr = operand_expr ('(' exprlist ')' | '[' expr ']' | '.' IDENT)*
 unary_expr = [+-&*] unary_expr
-           | base_expre_expr
+           | base_expr
 mul_expr = unary_expr (mul_op unary_expr)*
 add_expr = mul_expr (add_op mul_expr)*
 cmp_expr = add_expr (cmp_op add_expr)*
