@@ -80,3 +80,7 @@ void lexer_tests() {
     assert_token_int(16);
     assert_token_eof();
 }
+
+void parse_tests() {
+    
+}
