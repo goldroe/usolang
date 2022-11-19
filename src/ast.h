@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "lexer.h"
+
 enum Typespec_Kind {
     TYPESPEC_NONE,
     TYPESPEC_IDENT,
@@ -11,11 +13,23 @@ enum Typespec_Kind {
     TYPESPEC_FUNCTION,
 };
 
+struct Typespec;
+
+struct Typespec_Function {
+    Typespec *arg_types;
+    size_t num_args;
+    Typespec *ret_types;
+    size_t num_ret;
+};
+struct Typespec_Array {
+    
+};
 struct Typespec {
     Typespec_Kind kind;
 
     union {
         const char *identifier;
+        Typespec_Function function;
     };
 };
 
@@ -35,6 +49,8 @@ enum Expr_Type {
     EXPR_CAST,
 };
 
+struct Expr;
+
 struct Compound_Expr {
     Typespec *type;
     Expr **args;
@@ -50,7 +66,8 @@ struct Index_Expr {
 };
 struct Call_Expr {
     const char *identifier;
-    Typespec *return_type;
+    Typespec **ret_types;
+    size_t num_ret;
     Expr **args;
     size_t num_args;
 };
@@ -59,7 +76,7 @@ struct Cast_Expr {
     Expr *expr;
 };
 struct Unary_Expr {
-    Token_Type *op;
+    Token_Type op;
     Expr *expr;
 };
 struct Binary_Expr {
